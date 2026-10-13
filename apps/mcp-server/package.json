@@ -1,0 +1,17 @@
+{
+  "name": "@scene-glass/mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc --noEmit --target ES2023 --module NodeNext --moduleResolution NodeNext --strict --types node src/main.ts",
+    "dev": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@scene-glass/browser-client": "workspace:*",
+    "@scene-glass/server": "workspace:*"
+  }
+}

@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scene Glass Static HTML Fixture</title>
+    <!-- prettier-ignore -->
+    <script async src="%VITE_SCENE_GLASS_LOADER_URL%" data-scg-project="%VITE_SCENE_GLASS_PROJECT_ID%" data-scg-token="%VITE_SCENE_GLASS_PROJECT_TOKEN%" data-scg-navigation="document"></script>
+    <style>
+      :root {
+        color: #172554;
+        font-family: system-ui, sans-serif;
+        line-height: 1.5;
+      }
+
+      body {
+        margin: 0;
+        background: #eff6ff;
+      }
+
+      main {
+        width: min(900px, calc(100% - 2rem));
+        margin: 2rem auto;
+      }
+
+      section,
+      header {
+        margin-block: 1rem;
+        padding: 1rem;
+        border: 1px solid #bfdbfe;
+        border-radius: 0.5rem;
+        background: #ffffff;
+      }
+
+      nav,
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        padding: 0.4rem 0.7rem;
+        border: 1px solid #1d4ed8;
+        border-radius: 0.25rem;
+        background: #dbeafe;
+        color: #172554;
+        cursor: pointer;
+      }
+
+      canvas,
+      iframe,
+      #virtual-container {
+        display: block;
+        width: 100%;
+        margin-block: 0.75rem;
+        border: 1px solid #93c5fd;
+        border-radius: 0.25rem;
+      }
+
+      canvas {
+        height: auto;
+      }
+
+      iframe {
+        min-height: 130px;
+      }
+
+      #virtual-container {
+        height: 12rem;
+        overflow: auto;
+      }
+
+      [role='listitem'] {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid #dbeafe;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header data-scg-id="static-home-header">
+        <p>Static HTML document fixture</p>
+        <h1 data-scg-id="static-home-title">Scene Glass document navigation</h1>
+        <nav aria-label="Fixture pages" data-scg-id="static-home-navigation">
+          <a aria-current="page" data-scg-id="static-home-link-home" href="./index.html">Home</a>
+          <a data-scg-id="static-home-link-page-two" href="./page-two.html">Open page two</a>
+          <button data-scg-id="static-home-reload" id="reload-page" type="button">
+            Reload document
+          </button>
+        </nav>
+      </header>
+
+      <section aria-labelledby="identity-heading" data-scg-id="static-home-identity-section">
+        <h2 id="identity-heading">Document identity</h2>
+        <p data-scg-id="static-home-document-path">This page is loaded as a standalone document.</p>
+        <output aria-live="polite" data-scg-id="static-home-lifecycle" id="lifecycle-status">
+          Waiting for pageshow.
+        </output>
+      </section>
+
+      <section aria-labelledby="controls-heading" data-scg-id="static-home-controls-section">
+        <h2 id="controls-heading">Host controls</h2>
+        <div class="controls">
+          <button data-scg-id="static-home-count-increment" id="increment-count" type="button">
+            Increment count
+          </button>
+          <button data-scg-id="static-home-count-reset" id="reset-count" type="button">
+            Reset count
+          </button>
+          <output aria-live="polite" data-scg-id="static-home-count" id="count-output"
+            >Count: 0</output
+          >
+        </div>
+        <form data-scg-id="static-home-note-form" id="note-form">
+          <label for="note-input">Host note</label>
+          <input
+            data-scg-id="static-home-note-input"
+            id="note-input"
+            name="note"
+            placeholder="Type without a Scene Glass server"
+          />
+          <button data-scg-id="static-home-note-submit" type="submit">Show note</button>
+          <output
+            aria-live="polite"
+            data-scg-id="static-home-note-output"
+            id="note-output"
+          ></output>
+        </form>
+      </section>
+
+      <section aria-labelledby="canvas-heading" data-scg-id="static-home-canvas-section">
+        <h2 id="canvas-heading">Canvas target</h2>
+        <canvas data-scg-id="static-home-canvas" height="160" id="review-canvas" width="720">
+          Canvas review target.
+        </canvas>
+      </section>
+
+      <section aria-labelledby="frame-heading" data-scg-id="static-home-iframe-section">
+        <h2 id="frame-heading">Iframe target</h2>
+        <iframe
+          data-scg-id="static-home-iframe"
+          srcdoc="<!doctype html><html lang='en'><body><p data-scg-id='static-home-iframe-content'>Inline frame review target.</p><button data-scg-id='static-home-iframe-button' type='button' onclick='this.textContent=&quot;Frame control activated&quot;'>Activate frame control</button></body></html>"
+          title="Inline frame review target"
+        ></iframe>
+      </section>
+
+      <section aria-labelledby="shadow-heading" data-scg-id="static-home-shadow-section">
+        <h2 id="shadow-heading">Shadow DOM target</h2>
+        <div data-scg-id="static-home-shadow-host" id="shadow-host"></div>
+      </section>
+
+      <section aria-labelledby="virtual-heading" data-scg-id="static-home-virtual-section">
+        <h2 id="virtual-heading">Virtual container target</h2>
+        <p>Use the controls to move a five-row window through deterministic review rows.</p>
+        <div class="controls">
+          <button data-scg-id="static-home-virtual-previous" id="virtual-previous" type="button">
+            Previous rows
+          </button>
+          <button data-scg-id="static-home-virtual-next" id="virtual-next" type="button">
+            Next rows
+          </button>
+          <output
+            aria-live="polite"
+            data-scg-id="static-home-virtual-range"
+            id="virtual-range"
+          ></output>
+        </div>
+        <div
+          aria-label="Virtualized review rows"
+          data-scg-id="static-home-virtual-container"
+          id="virtual-container"
+          role="list"
+        ></div>
+      </section>
+    </main>
+
+    <script>
+      const lifecycleStatus = document.querySelector('#lifecycle-status');
+      const navigationEntry = performance.getEntriesByType('navigation')[0];
+      const navigationType = navigationEntry?.type ?? 'navigate';
+
+      window.addEventListener('pageshow', (event) => {
+        lifecycleStatus.textContent = `${navigationType} document; pageshow ${
+          event.persisted ? 'restored from bfcache' : 'loaded'
+        }.`;
+      });
+
+      document.querySelector('#reload-page').addEventListener('click', () => {
+        window.location.reload();
+      });
+
+      let count = 0;
+      const countOutput = document.querySelector('#count-output');
+      document.querySelector('#increment-count').addEventListener('click', () => {
+        count += 1;
+        countOutput.textContent = `Count: ${count}`;
+      });
+      document.querySelector('#reset-count').addEventListener('click', () => {
+        count = 0;
+        countOutput.textContent = 'Count: 0';
+      });
+
+      const noteForm = document.querySelector('#note-form');
+      const noteInput = document.querySelector('#note-input');
+      const noteOutput = document.querySelector('#note-output');
+      noteForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        noteOutput.textContent = noteInput.value.trim() || 'No note entered.';
+      });
+
+      const canvas = document.querySelector('#review-canvas');
+      const context = canvas.getContext('2d');
+      if (context) {
+        context.fillStyle = '#dbeafe';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = '#1d4ed8';
+        context.fillRect(24, 30, 210, 84);
+        context.fillStyle = '#172554';
+        context.font = '20px system-ui';
+        context.fillText('Canvas review target', 270, 78);
+      }
+
+      const shadowHost = document.querySelector('#shadow-host');
+      const shadowRoot = shadowHost.attachShadow({ mode: 'open' });
+      shadowRoot.innerHTML = `
+        <style>
+          button { border: 1px solid #1d4ed8; border-radius: 0.25rem; padding: 0.4rem 0.7rem; }
+        </style>
+        <p data-scg-id="static-home-shadow-content">Shadow-root review target.</p>
+        <button data-scg-id="static-home-shadow-button" type="button">Activate shadow control</button>
+      `;
+      shadowRoot.querySelector('button').addEventListener('click', (event) => {
+        event.currentTarget.textContent = 'Shadow control activated';
+      });
+
+      const virtualItems = Array.from({ length: 25 }, (_, index) => `Review row ${index + 1}`);
+      const virtualContainer = document.querySelector('#virtual-container');
+      const virtualRange = document.querySelector('#virtual-range');
+      let virtualStart = 0;
+      const visibleRows = 5;
+
+      function renderVirtualRows() {
+        const rows = virtualItems.slice(virtualStart, virtualStart + visibleRows);
+        virtualContainer.replaceChildren(
+          ...rows.map((label, index) => {
+            const row = document.createElement('div');
+            row.dataset.scgId = `static-home-virtual-row-${virtualStart + index + 1}`;
+            row.setAttribute('role', 'listitem');
+            row.textContent = label;
+            return row;
+          }),
+        );
+        virtualRange.textContent = `Rows ${virtualStart + 1}-${virtualStart + rows.length} of ${
+          virtualItems.length
+        }`;
+      }
+
+      document.querySelector('#virtual-previous').addEventListener('click', () => {
+        virtualStart = Math.max(0, virtualStart - visibleRows);
+        renderVirtualRows();
+      });
+      document.querySelector('#virtual-next').addEventListener('click', () => {
+        virtualStart = Math.min(virtualItems.length - visibleRows, virtualStart + visibleRows);
+        renderVirtualRows();
+      });
+      renderVirtualRows();
+    </script>
+  </body>
+</html>

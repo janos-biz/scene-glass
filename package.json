@@ -1,0 +1,50 @@
+{
+  "name": "scene-glass",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "bootstrap:verify": "node scripts/verify-bootstrap.mjs",
+    "build:onboarding": "corepack pnpm --filter @scene-glass/onboarding run build",
+    "build": "corepack pnpm run build:onboarding && corepack pnpm --filter @scene-glass/browser-client run build && tsc --noEmit -p tsconfig.base.json",
+    "test": "corepack pnpm run test:unit && corepack pnpm run test:integration && corepack pnpm run test:security && corepack pnpm run test:platform:macos && corepack pnpm run test:platform:linux-smoke && corepack pnpm run test:e2e:chromium && corepack pnpm run test:e2e:firefox-smoke && corepack pnpm run test:e2e:lifecycle && corepack pnpm run test:observability",
+    "test:unit": "vitest run --config vitest.workspace.ts tests/contract",
+    "test:integration": "vitest run --config vitest.workspace.ts tests/integration",
+    "test:security": "vitest run --config vitest.workspace.ts tests/security",
+    "test:platform:macos": "vitest run --config vitest.workspace.ts tests/platform/macos-durability.test.ts tests/platform/onboarding-secure-read.test.ts",
+    "test:platform:linux-smoke": "vitest run --config vitest.workspace.ts tests/platform/linux-conformance.test.ts",
+    "test:e2e:chromium": "playwright test --config playwright.config.ts --project=chromium tests/e2e",
+    "test:e2e:firefox-smoke": "playwright test --config playwright.config.ts --project=firefox-smoke tests/e2e",
+    "test:e2e:lifecycle": "corepack pnpm run build:onboarding && corepack pnpm --filter @scene-glass/browser-client run build && playwright test --config playwright.lifecycle.config.ts",
+    "test:observability": "vitest run --config vitest.workspace.ts tests/observability",
+    "test:g001": "corepack pnpm run test:g001:contract && corepack pnpm run test:g001:integration && corepack pnpm run test:g001:security && corepack pnpm run test:g001:platform && corepack pnpm run test:g001:observability",
+    "test:g001:contract": "vitest run --config vitest.workspace.ts tests/contract/onboarding-contracts.test.ts tests/contract/onboarding-descriptors.test.ts",
+    "test:g001:integration": "vitest run --config vitest.workspace.ts tests/integration/onboarding-bootstrap.test.ts tests/integration/onboarding-static-runtime.test.ts tests/integration/onboarding-vite-runtime.test.ts tests/integration/onboarding-vite-cache.test.ts tests/integration/startup-preflight.test.ts",
+    "test:g001:security": "vitest run --config vitest.workspace.ts tests/security/cors-auth-root.test.ts tests/security/onboarding-credential-authority.test.ts tests/security/onboarding-static-serving.test.ts tests/security/onboarding-vite-cache-canary.test.ts",
+    "test:g001:platform": "vitest run --config vitest.workspace.ts tests/platform/onboarding-secure-read.test.ts tests/platform/onboarding-vite-snapshot-authority.test.ts",
+    "test:g001:observability": "vitest run --config vitest.workspace.ts tests/observability/cleanup-vite-cache.test.ts",
+    "lint": "eslint .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^24.10.0",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vitest/eslint-plugin": "^1.6.23",
+    "eslint": "^9.39.5",
+    "fastify": "^5.10.0",
+    "light-my-request": "^6.6.0",
+    "prettier": "^3.9.5",
+    "tsx": "^4.23.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.64.0",
+    "vite": "^7.3.6",
+    "vitest": "^4.1.10",
+    "vue": "^3.5.40"
+  }
+}

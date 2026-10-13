@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+CLI="$SCRIPT_DIR/../packages/onboarding/dist/cli.js"
+
+# The lifecycle reports a failing stage but not the check that failed, which
+# leaves an ordinary setup failure unactionable. SCG_LIFECYCLE_DEBUG=1 prints it.
+# Honour an explicit setting; otherwise point at it once, on failure only.
+if [ "${SCG_LIFECYCLE_DEBUG:-}" = "1" ]; then
+  exec node "$CLI" setup "$@"
+fi
+
+set +e
+node "$CLI" setup "$@"
+status=$?
+set -e
+
+if [ "$status" -ne 0 ]; then
+  echo "" >&2
+  echo "scene-glass-onboarding: rerun with SCG_LIFECYCLE_DEBUG=1 to print the failing check:" >&2
+  echo "    SCG_LIFECYCLE_DEBUG=1 $0" >&2
+fi
+exit "$status"

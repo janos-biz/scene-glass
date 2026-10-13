@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "globalLimits": {
+    "httpBodyBytes": 524288,
+    "concurrentRequestsGlobal": 32
+  },
+  "projects": [
+    {
+      "projectId": "example-project",
+      "root": "/path/to/scene-glass-project",
+      "allowedOrigins": ["http://localhost:5173"],
+      "tokenEnv": "SCENE_GLASS_EXAMPLE_PROJECT_TOKEN",
+      "framework": "vue3",
+      "limits": {
+        "memoBytes": 8192,
+        "pageFileBytes": 4194304,
+        "normalSessionsPerProject": 16
+      }
+    }
+  ]
+}

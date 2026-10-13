@@ -1,0 +1,34 @@
+{
+  "name": "@scene-glass/onboarding",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./descriptors": "./src/descriptors.ts",
+    "./native": "./src/native.ts",
+    "./static": "./src/static/index.ts",
+    "./vite": "./src/vite/index.ts",
+    "./vite/cache": "./src/vite/cache.ts"
+  },
+  "scripts": {
+    "build:native": "node ../../node_modules/.pnpm/node-gyp@11.2.0/node_modules/node-gyp/bin/node-gyp.js rebuild --directory .",
+    "build:clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build:types": "tsc -p tsconfig.build.json",
+    "build:runtime": "node scripts/build-runtime.mjs",
+    "verify:artifacts": "node scripts/verify-artifacts.mjs",
+    "build": "corepack pnpm run build:clean && corepack pnpm run build:native && corepack pnpm run build:types && corepack pnpm run build:runtime && corepack pnpm run verify:artifacts"
+  },
+  "dependencies": {
+    "@scene-glass/contracts": "workspace:*",
+    "@scene-glass/core": "workspace:*",
+    "@scene-glass/server": "workspace:*",
+    "ajv": "8.20.0",
+    "esbuild": "0.25.5",
+    "fastify": "5.10.0",
+    "fs-ext": "2.1.1",
+    "node-addon-api": "8.5.0",
+    "node-gyp": "11.2.0"
+  }
+}

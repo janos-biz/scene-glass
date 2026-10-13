@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@scene-glass/browser-client": ["packages/browser-client/src/loader.ts"],
+      "@scene-glass/contracts": ["packages/contracts/src/index.ts"],
+      "@scene-glass/core": ["packages/core/src/screen-review.ts"],
+      "@scene-glass/core/*": ["packages/core/src/*.ts"],
+      "@scene-glass/server": ["packages/server/src/app.ts"],
+      "@scene-glass/onboarding": ["packages/onboarding/src/index.ts"]
+    },
+    "moduleDetection": "force",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "sourceMap": true,
+    "types": []
+  },
+  "exclude": ["fixtures", "**/dist", "**/node_modules"]
+}

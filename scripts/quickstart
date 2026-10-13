@@ -1,0 +1,187 @@
+#!/usr/bin/env sh
+# Scene Glass quickstart: build this checkout once, then apply it to a host project.
+#
+# Prerequisite (one time): clone this repository to get this script, e.g.
+#   git clone https://github.com/owen-ever/scene-glass.git /path/to/scene-glass
+#
+# Usage:
+#   scripts/quickstart [--rebuild] [--start] [HOST_PROJECT_DIR]
+#
+#   HOST_PROJECT_DIR   Host project root (defaults to the current directory).
+#                      Must be a supported Vue 3/Vite, React/Vite SPA, or
+#                      canonical static HTML project.
+#   --rebuild          Rebuild the Scene Glass checkout even if it is already built.
+#   --start            After setup, launch scripts/start in the foreground.
+#
+# The three lifecycle commands (setup/start/uninstall) select the host by the
+# current directory and the checkout by the wrapper path; this script wires both.
+set -eu
+
+REBUILD=0
+RUN_START=0
+HOST_DIR=""
+
+for arg in "$@"; do
+  case "$arg" in
+    --no-update) NO_UPDATE=1 ;;
+    --rebuild) REBUILD=1 ;;
+    --start) RUN_START=1 ;;
+    -h | --help)
+      echo "Usage: scripts/quickstart [--rebuild] [--no-update] [--start] [HOST_PROJECT_DIR]"
+      exit 0
+      ;;
+    -*)
+      echo "quickstart: unknown option: $arg" >&2
+      exit 2
+      ;;
+    *)
+      if [ -n "$HOST_DIR" ]; then
+        echo "quickstart: only one HOST_PROJECT_DIR may be given" >&2
+        exit 2
+      fi
+      HOST_DIR="$arg"
+      ;;
+  esac
+done
+
+CHECKOUT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+HOST_DIR=${HOST_DIR:-$(pwd)}
+if ! HOST_DIR=$(CDPATH= cd -- "$HOST_DIR" 2>/dev/null && pwd); then
+  echo "quickstart: host project directory not found" >&2
+  exit 1
+fi
+
+# --- 1. Toolchain checks -----------------------------------------------------
+command -v node >/dev/null 2>&1 || {
+  echo "quickstart: Node.js is not on PATH (Node 24 required)." >&2
+  exit 1
+}
+NODE_MAJOR=$(node -p 'process.versions.node.split(".")[0]')
+if [ "$NODE_MAJOR" != "24" ]; then
+  echo "quickstart: Node 24 is required, but found $(node -v)." >&2
+  echo "            Install or activate Node 24 with any tool (system package, Homebrew, nvm, fnm, volta, asdf, ...) and retry." >&2
+  exit 1
+fi
+command -v corepack >/dev/null 2>&1 || {
+  echo "quickstart: corepack is not on PATH (ships with Node 24; try 'corepack enable')." >&2
+  exit 1
+}
+
+NO_UPDATE=${NO_UPDATE:-0}
+# --- 1.5 Self-update the checkout (fixes ship continuously) ------------------
+if [ "$NO_UPDATE" -eq 0 ] && [ -d "$CHECKOUT/.git" ] && command -v git >/dev/null 2>&1; then
+  before=$(git -C "$CHECKOUT" rev-parse HEAD 2>/dev/null || echo unknown)
+  if git -C "$CHECKOUT" pull --ff-only >/dev/null 2>&1; then
+    after=$(git -C "$CHECKOUT" rev-parse HEAD 2>/dev/null || echo unknown)
+    if [ "$before" != "$after" ]; then
+      echo "quickstart: checkout updated ($(printf %.7s "$before")..$(printf %.7s "$after")); re-running the updated quickstart."
+      extra=""
+      [ "$RUN_START" -eq 1 ] && extra="--start"
+      exec "$CHECKOUT/scripts/quickstart" --no-update --rebuild $extra "$HOST_DIR"
+    else
+      echo "quickstart: checkout is up to date."
+    fi
+  else
+    echo "quickstart: warning: git pull failed (offline or local changes); using the current checkout." >&2
+  fi
+fi
+
+# --- 2. Build the checkout once (idempotent) ---------------------------------
+CLI="$CHECKOUT/packages/onboarding/dist/cli.js"
+LOADER="$CHECKOUT/packages/browser-client/dist/scene-glass-loader.js"
+if [ "$REBUILD" -eq 1 ] || [ ! -f "$CLI" ] || [ ! -f "$LOADER" ]; then
+  echo "quickstart: building Scene Glass checkout at $CHECKOUT ..."
+  set +e
+  (
+    cd "$CHECKOUT" \
+      && corepack pnpm install --frozen-lockfile --ignore-scripts \
+      && node scripts/verify-bootstrap.mjs \
+      && corepack pnpm rebuild fs-ext esbuild \
+      && corepack pnpm run build:onboarding \
+      && corepack pnpm --filter @scene-glass/browser-client run build
+  )
+  build_status=$?
+  set -e
+  if [ "$build_status" -ne 0 ]; then
+    echo "" >&2
+    echo "quickstart: build failed (exit $build_status). Read the error above." >&2
+    echo "  The onboarding build compiles a native addon, so a missing C/C++ toolchain is" >&2
+    echo "  the usual cause. On macOS run 'xcode-select --install' (node-gyp also needs" >&2
+    echo "  python3); on Linux install build-essential and python3." >&2
+    echo "  Note: the build clears packages/onboarding/dist first, so a failed native step" >&2
+    echo "  leaves no dist/cli.js and 'scripts/start' would report MODULE_NOT_FOUND." >&2
+    echo "  Fix the toolchain, then rerun with --rebuild." >&2
+    exit "$build_status"
+  fi
+else
+  echo "quickstart: checkout already built (use --rebuild to force a fresh build)."
+fi
+
+if [ ! -f "$CLI" ] || [ ! -f "$LOADER" ]; then
+  echo "quickstart: build finished but required artifacts are missing:" >&2
+  [ -f "$CLI" ] || echo "  missing: packages/onboarding/dist/cli.js" >&2
+  [ -f "$LOADER" ] || echo "  missing: packages/browser-client/dist/scene-glass-loader.js" >&2
+  echo "  Rerun 'scripts/quickstart --rebuild' and check the build output." >&2
+  exit 1
+fi
+
+# --- 3. Run setup in the host project (interactive approval) -----------------
+echo "quickstart: running setup in host project: $HOST_DIR"
+echo "            Review the secret-redacted preview and approve (yes) when prompted."
+set +e
+(cd "$HOST_DIR" && SCG_LIFECYCLE_DEBUG=1 "$CHECKOUT/scripts/setup")
+status=$?
+set -e
+if [ "$status" -ne 0 ]; then
+  echo "" >&2
+  echo "quickstart: setup did not complete (exit $status)." >&2
+  echo "  The [SCG_LIFECYCLE_DEBUG] line above names the failing check. Common causes:" >&2
+  echo "  - 'SCG_ONBOARDING_COMMAND_INVALID' (no stage printed): the dev origin cannot be" >&2
+  echo "    read without executing the config. Use a literal server.port (or --port N on" >&2
+  echo "    the dev script), keep the host on loopback, and avoid a second server block." >&2
+  echo "    Plugins, aliases and other options are ignored and never a cause." >&2
+  echo "  - 'credential environment collision in .env': a VITE_SCENE_GLASS_* or" >&2
+  echo "    SCENE_GLASS_HOST_TOKEN assignment already exists in $HOST_DIR/.env (or another" >&2
+  echo "    non-local env file). Setup owns those keys in .env.development.local; remove" >&2
+  echo "    them from the shared file and retry." >&2
+  echo "  - 'allowed origins must be unique across projects': another registered project" >&2
+  echo "    already claims this port. Give this one a different --port, or unregister the" >&2
+  echo "    other project first." >&2
+  echo "  - 'ambiguous loader evidence': remove any Scene Glass <script> line from a stale" >&2
+  echo "    build output (for example $HOST_DIR/dist/index.html) and retry." >&2
+  echo "  - 'unsupported host': the project must be Vue 3/Vite, React/Vite SPA, or static HTML." >&2
+  exit "$status"
+fi
+
+# --- 4. Next steps -----------------------------------------------------------
+cat <<EOF
+
+Scene Glass is set up in: $HOST_DIR
+
+Start it with two terminals from the host project root:
+  Terminal A:  npm run dev                     # your own Vite dev server (unchanged)
+  Terminal B:  $CHECKOUT/scripts/start         # Scene Glass MCP + loader (127.0.0.1:4175)
+
+Then open the Local URL your dev server prints — both loopback spellings are
+authorized, e.g.
+  http://127.0.0.1:5173  or  http://localhost:5173   # hard-refresh (Cmd/Ctrl+Shift+R) on first load
+
+If memos later show up under "유실 데이터" (orphaned), the element could not be
+found again. Stamp a stable data-scg-id on the elements you annotate — derived
+from identity, not position — and Scene Glass binds exactly. See "Memos land in
+유실 데이터" in the Scene Glass README.
+
+Hash/query routing: to give #route or ?query views distinct memos, add
+  data-scg-include-hash="true"   (or data-scg-include-query="true")
+to the loader <script> in $HOST_DIR/index.html.
+
+Remove later with:  ( cd "$HOST_DIR" && "$CHECKOUT/scripts/uninstall" )
+EOF
+
+if [ "$RUN_START" -eq 1 ]; then
+  echo ""
+  echo "quickstart: --start given; launching Scene Glass (Ctrl+C to stop)."
+  echo "            Run 'npm run dev' in another terminal if it is not already running."
+  cd "$HOST_DIR"
+  exec "$CHECKOUT/scripts/start"
+fi

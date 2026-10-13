@@ -1,0 +1,17 @@
+.DS_Store
+node_modules/
+dist/
+build/
+artifacts/
+qa-artifacts/
+coverage/
+playwright-report/
+test-results/
+/.scene-glass/
+.gjc/
+.scg/
+.env*
+tmp/
+temp/
+quarantine/
+fixtures/**/*.scg

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scene Glass Static HTML Fixture — Page Two</title>
+    <!-- prettier-ignore -->
+    <script async src="%VITE_SCENE_GLASS_LOADER_URL%" data-scg-project="%VITE_SCENE_GLASS_PROJECT_ID%" data-scg-token="%VITE_SCENE_GLASS_PROJECT_TOKEN%" data-scg-navigation="document"></script>
+    <style>
+      :root {
+        color: #3f1d2e;
+        font-family: system-ui, sans-serif;
+        line-height: 1.5;
+      }
+
+      body {
+        margin: 0;
+        background: #fff1f2;
+      }
+
+      main {
+        width: min(760px, calc(100% - 2rem));
+        margin: 2rem auto;
+      }
+
+      header,
+      section {
+        margin-block: 1rem;
+        padding: 1rem;
+        border: 1px solid #fecdd3;
+        border-radius: 0.5rem;
+        background: #ffffff;
+      }
+
+      nav,
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      button {
+        padding: 0.4rem 0.7rem;
+        border: 1px solid #be123c;
+        border-radius: 0.25rem;
+        background: #ffe4e6;
+        color: #3f1d2e;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      output {
+        display: block;
+        margin-top: 0.75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header data-scg-id="static-page-two-header">
+        <p>Static HTML document fixture</p>
+        <h1 data-scg-id="static-page-two-title">Page two document navigation</h1>
+        <nav aria-label="Fixture pages" data-scg-id="static-page-two-navigation">
+          <a data-scg-id="static-page-two-link-home" href="./index.html">Return home</a>
+          <a aria-current="page" data-scg-id="static-page-two-link-current" href="./page-two.html">
+            Page two
+          </a>
+          <button data-scg-id="static-page-two-reload" id="reload-page" type="button">
+            Reload document
+          </button>
+        </nav>
+      </header>
+
+      <section aria-labelledby="identity-heading" data-scg-id="static-page-two-identity-section">
+        <h2 id="identity-heading">Page identity</h2>
+        <p data-scg-id="static-page-two-document-path">
+          This is a second standalone HTML document rather than an SPA route.
+        </p>
+        <output aria-live="polite" data-scg-id="static-page-two-lifecycle" id="lifecycle-status">
+          Waiting for pageshow.
+        </output>
+      </section>
+
+      <section aria-labelledby="controls-heading" data-scg-id="static-page-two-controls-section">
+        <h2 id="controls-heading">Host controls</h2>
+        <div class="controls">
+          <button
+            aria-controls="details-panel"
+            aria-expanded="false"
+            data-scg-id="static-page-two-toggle-details"
+            id="toggle-details"
+            type="button"
+          >
+            Show review details
+          </button>
+          <button data-scg-id="static-page-two-acknowledge" id="acknowledge" type="button">
+            Acknowledge review
+          </button>
+        </div>
+        <p data-scg-id="static-page-two-details" hidden id="details-panel">
+          This panel is controlled entirely by the host page and remains usable when the loader URL
+          is unavailable.
+        </p>
+        <output
+          aria-live="polite"
+          data-scg-id="static-page-two-acknowledgement"
+          id="acknowledgement"
+        >
+          No acknowledgement yet.
+        </output>
+      </section>
+    </main>
+
+    <script>
+      const lifecycleStatus = document.querySelector('#lifecycle-status');
+      const navigationEntry = performance.getEntriesByType('navigation')[0];
+      const navigationType = navigationEntry?.type ?? 'navigate';
+
+      window.addEventListener('pageshow', (event) => {
+        lifecycleStatus.textContent = `${navigationType} document; pageshow ${
+          event.persisted ? 'restored from bfcache' : 'loaded'
+        }.`;
+      });
+
+      document.querySelector('#reload-page').addEventListener('click', () => {
+        window.location.reload();
+      });
+
+      const detailsButton = document.querySelector('#toggle-details');
+      const detailsPanel = document.querySelector('#details-panel');
+      detailsButton.addEventListener('click', () => {
+        const isExpanded = detailsButton.getAttribute('aria-expanded') === 'true';
+        detailsButton.setAttribute('aria-expanded', String(!isExpanded));
+        detailsButton.textContent = isExpanded ? 'Show review details' : 'Hide review details';
+        detailsPanel.hidden = isExpanded;
+      });
+
+      document.querySelector('#acknowledge').addEventListener('click', () => {
+        document.querySelector('#acknowledgement').textContent =
+          'Review acknowledged by the host page.';
+      });
+    </script>
+  </body>
+</html>

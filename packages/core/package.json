@@ -1,0 +1,13 @@
+{
+  "name": "@scene-glass/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/screen-review.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@scene-glass/contracts": "workspace:*"
+  }
+}

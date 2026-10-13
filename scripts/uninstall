@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+CLI="$SCRIPT_DIR/../packages/onboarding/dist/cli.js"
+
+# See scripts/setup: the stage name alone does not say which check refused.
+if [ "${SCG_LIFECYCLE_DEBUG:-}" = "1" ]; then
+  exec node "$CLI" uninstall "$@"
+fi
+
+set +e
+node "$CLI" uninstall "$@"
+status=$?
+set -e
+
+if [ "$status" -ne 0 ]; then
+  echo "" >&2
+  echo "scene-glass-onboarding: rerun with SCG_LIFECYCLE_DEBUG=1 to print the failing check:" >&2
+  echo "    SCG_LIFECYCLE_DEBUG=1 $0" >&2
+  echo "  SCG_LIFECYCLE_NOT_ACTIVE means this project has no active setup manifest under" >&2
+  echo "  .scg/onboarding, so there is nothing this command is allowed to reverse." >&2
+fi
+exit "$status"

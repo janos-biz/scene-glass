@@ -1,0 +1,63 @@
+#!/usr/bin/env sh
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+CHECKOUT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
+CLI="$CHECKOUT/packages/onboarding/dist/cli.js"
+LOADER="$CHECKOUT/packages/browser-client/dist/scene-glass-loader.js"
+
+# The loader is read into memory when the server starts and served from that
+# buffer for the life of the process, and nothing downstream checks that it
+# matches this checkout. So a pull that changes the browser client keeps serving
+# the previous bundle until someone remembers to rebuild — silently, because the
+# page still connects and the panel still says ready. The staleness is settled
+# here instead, where it is still cheap to fix.
+#
+# Only the loader is rebuilt. It is a plain Vite build: no native addon, and it
+# writes nothing outside its own dist. The onboarding CLI is left alone on
+# purpose — that build compiles a native addon and clears its dist first, so
+# running it from here could turn a stale start into no start at all.
+LOADER_SOURCES="$CHECKOUT/packages/browser-client/src
+$CHECKOUT/packages/browser-client/vite.config.ts
+$CHECKOUT/packages/contracts/src
+$CHECKOUT/packages/core/src"
+
+loader_is_stale() {
+  if [ ! -f "$LOADER" ]; then
+    return 0
+  fi
+  # A single source newer than the bundle is enough; stop at the first one.
+  newer=$(printf %s "$LOADER_SOURCES" | while IFS= read -r source; do
+    [ -e "$source" ] || continue
+    find "$source" -newer "$LOADER" -print 2>/dev/null | head -n 1
+  done | head -n 1)
+  [ -n "$newer" ]
+}
+
+build_loader() {
+  echo "scene-glass: browser loader is out of date; rebuilding ..." >&2
+  (cd "$CHECKOUT" && corepack pnpm --filter @scene-glass/browser-client run build) >&2
+}
+
+if [ "${SCG_SKIP_LOADER_BUILD:-}" != "1" ] && loader_is_stale; then
+  if ! build_loader; then
+    echo "" >&2
+    echo "scene-glass: the browser loader could not be rebuilt, so starting now would" >&2
+    echo "  serve a bundle that does not match this checkout. Build the checkout once:" >&2
+    echo "      $SCRIPT_DIR/quickstart --rebuild" >&2
+    echo "  Set SCG_SKIP_LOADER_BUILD=1 to start with the existing bundle anyway." >&2
+    exit 1
+  fi
+fi
+
+# The CLI cannot be rebuilt from here safely, but running a stale one silently is
+# the same trap. Say so and continue: an out-of-date CLI still starts.
+if [ -f "$CLI" ]; then
+  cli_newer=$(find "$CHECKOUT/packages/onboarding/src" -newer "$CLI" -print 2>/dev/null | head -n 1)
+  if [ -n "$cli_newer" ]; then
+    echo "scene-glass: warning: packages/onboarding/src is newer than its build." >&2
+    echo "  Rebuild it with: $SCRIPT_DIR/quickstart --rebuild" >&2
+  fi
+fi
+
+exec node "$CLI" start "$@"

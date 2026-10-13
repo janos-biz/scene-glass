@@ -1,0 +1,17 @@
+{
+  "name": "@scene-glass/browser-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/loader.ts",
+    "./scene-glass-loader.js": "./dist/scene-glass-loader.js"
+  },
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@scene-glass/contracts": "workspace:*",
+    "@scene-glass/core": "workspace:*"
+  }
+}
